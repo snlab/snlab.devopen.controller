@@ -1,0 +1,13 @@
+.has_apf .blackdg, .listBP {
+    background: @datagrid-background;
+}
+
+.debugcontainer .scroller{
+    position : absolute;
+    overflow-y : auto;
+    overflow-x : hidden;
+    top : @debug-pane-scroller-top;
+    left : 0;
+    right : 0;
+    bottom : @debug-pane-scroller-bottom;
+}

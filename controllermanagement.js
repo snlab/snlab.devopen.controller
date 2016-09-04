@@ -1,6 +1,7 @@
 define( function(require, exports, module){
   "use strict";
-  main.consumes = ["Plugin", "net", "menus", "ui", "commands", "terminal", "Dialog", "c9", "dialog.error", "proc", "util", "fs", "console", "tabManager"];
+  main.consumes = ["Plugin", "net", "menus", "ui", "commands", "terminal", "Dialog", "c9", "dialog.error",
+  "proc", "util", "fs", "console", "tabManager", "layout", "Panel", "dialog.confirm", "dialog.error"];
   main.provides = ["controllermanagement"];
   return main;
 
@@ -13,103 +14,188 @@ define( function(require, exports, module){
     var commands = imports.commands;
     var Dialog = imports.Dialog;
     var showError = imports["dialog.error"].show;
+    var confirm = imports["dialog.confirm"].show;
     var proc = imports.proc;
     var util = imports.util;
     var fs = imports.fs;
     var console = imports.console;
     var tabManager = imports.tabManager;
+    var Panel = imports.Panel;
     // var ssh2 = require("./lib/ssh2.js");
     var join = require("path").join;
     var basename = require("path").basename;
     var dirname = require("path").dirname;
 
-    var staticPrefix = options.staticPrefix;
+    var search = require("../c9.ide.navigate/search");
+    var Tree = require("ace_tree/tree");
+    var TreeData = require("ace_tree/data_provider");
+    var async = require("async");
+    var markup = require("text!./controllermanagement.xml");
+    var css = require("text!./controllermanagement.css");
+
+    // var staticPrefix = options.staticPrefix;
 
     /***** Initialization *****/
+    var controllerpanel = new Panel("Controller List", main.consumes, {
+      index: options.index || 200,
+      width: 200,
+      caption: "Controller",
+      buttonCSSClass: "controllers",
+      panelCSSClass: "controllercontainer",
+      minwidth: 130,
+      where: options.where || "left"
+    });
 
-    var plugin = new Plugin("Ajax.org", main.consumes);
-    // var emit = plugin.getEmitter();
-
-    var readonly = c9.readonly;
-    var defaultExtension = "";
-    var controllerlist;
+    var emit = controllerpanel.getEmitter();
+    var controllers = {};
+    var sources = [];
+    var container, btnActivate, btnInactivate, btnDelete, btnEdit, btnManagement, btnAdd;
 
     var loaded = false;
-    function load(callback) {
+    function load(){
         if (loaded) return false;
         loaded = true;
 
-        menus.addItemByPath("Tools/Controller Management", new ui.item({
-            command: "managedialog"
-        }), 100, plugin);
+    controllerpanel.setCommand({
+      name: "togglecontrollers",
+      hint: "show the controller panel"
+    });
 
-        menus.addItemByPath("Tools/Controller Management/Controller1", new ui.item({
+    //commands
 
-        }), 120, plugin);
-        menus.addItemByPath("Tools/Controller Management/Controller2", new ui.item({
+    commands.addCommand({
+      name: "activate",
+      exec: function(){
 
-        }), 130, plugin);
-        menus.addItemByPath("Tools/Controller Management/Controller3", new ui.item({
+      }
+    }, controllerpanel);
 
-        }), 140, plugin);
+    commands.addCommand({
+      name: "inactivate",
+      exec: function(){
 
-         controllerlist = new Dialog("controllerlist", main.consumes, {
-         name: "open-the-controller-list",
-         allowClose: true,
-         title: "Choose one controller",
-         elements: [
-           {
-             type: "button",
-             id: "cancel",
-             color: "grey",
-             caption: "Cancel",
-             hotkey: "ESC",
-             onclick: function(){
-               controllerlist.hide();
-             }
-           },
-           {
-             type: "button",
-             id: "ok",
-             color: "green",
-             caption: "OK",
-             default: true,
-             onclick: function(){
-               invokeController();
-               controllerlist.hide();
-             }
-           }
-         ]
-       });
+      }
+    }, controllerpanel);
 
-       commands.addCommand({
-         name: "managedialog",
-         hint: "invoke the controller management list",
-         exec: function(){ callControllerList();
-       }
-      }, plugin);
+    commands.addCommand({
+      name: "delete",
+      exec: function(){
 
+      }
+    }, controllerpanel);
 
-    }
+    commands.addCommand({
+      name: "edit",
+      exec: function(){
+
+      }
+    }, controllerpanel);
+
+    commands.addCommand({
+      name: "manage",
+      exec: function(){
+
+      }
+    }, controllerpanel);
+
+    commands.addCommand({
+      name: "add",
+      exec: function(){
+
+      }
+    }, controllerpanel);
+
+    // Load CSS
+    ui.insertCss(css, controllerpanel);
+  }
+
+  function draw(opts){
+    //Import Skin
+    ui.insertSkin({
+      name: "controllers",
+      data: require("text!./skin.xml"),
+      "media-path" : options.staticPrefix + "/images/",
+      "icon-path"  : options.staticPrefix + "/icons/"
+    }, controllerpanel);
+
+    // Create UI elements
+    var bar = opts.aml;
+
+    var scroller = bar.$ext.appendChild(document.createElement("div"));
+    // opts.html.innerHTML = "HELLO";
+    scroller.className = "scroller";
+
+    // Create UI elements
+    var parent = bar;
+    ui.insertMarkup(parent, markup, controllerpanel);
+
+    container = controllerpanel.getElement("hbox");
+    btnActivate = controllerpanel.getElement("btnActivate");
+    btnInactivate = controllerpanel.getElement("btnInactivate");
+    btnDelete = controllerpanel.getElement("btnDelete");
+    btnEdit = controllerpanel.getElement("btnEdit");
+    btnManagement = controllerpanel.getElement("btnManagement");
+    btnAdd = controllerpanel.getElement("btnAdd");
+
+    btnActivate.on("click", function(){
+
+    });
+    btnInactivate.on("click", function(){
+
+    });
+    btnDelete.on("click", function(){
+
+    });
+    btnEdit.on("click", function(){
+
+    });
+    btnManagement.on("click", function(){
+
+    });
+    btnAdd.on("click", function(){
+
+    });
+
+    var frame = ui.frame({
+      htmlNode: scroller,
+      buttons: "min",
+      activetitle: "min",
+      caption: "Controller List"
+    });
+    ui.insertByIndex(scroller, frame.$ext, 200, false);
+    controllerpanel.addElement(frame);
+    // emit.sticky("draw", { aml: frame, html: frame.$int });
+  }
+
+    // controllerpanel.on("draw", function(e) {
+    //   e.html.innerHTML = "Hello World!";
+    // });
+
 
     /***** Methods *****/
 
-    function callControllerList(){
-      controllerlist.show();
-    }
-
-    function invokeController(){
-
-    }
+    // function callControllerList(){
+    //   controllerlist.show();
+    // }
+    //
+    // function invokeController(){
+    //
+    // }
 
 
 
     /***** Lifecycle *****/
 
-    plugin.on("load", function(){
-        load();
+    controllerpanel.on("draw", function(e) {
+            draw(e);
     });
-    plugin.on("unload", function(){
+    controllerpanel.on("load", function(){
+            load();
+    });
+    // controllerpanel.on("draw", function(e) {
+    //         draw(e);
+    // });
+    controllerpanel.on("unload", function(){
         loaded = false;
         defaultExtension = null;
     });
@@ -118,8 +204,8 @@ define( function(require, exports, module){
 
     /***** Register and define API *****/
 
-    register(null, {
-        controllermanagement: plugin
-    });
+      register(null, {
+        controllermanagement: controllerpanel
+      });
   }
 });
