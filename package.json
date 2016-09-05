@@ -1,14 +1,24 @@
 {
-  "name": "controllermanagement",
-  "description": "controller management",
-  "version": "0.1.0",
-  "author": "May",
+  "name": "snlab.devopen.controller",
+  "description": "A plugin for DevOpen IDE (and, in turn, Cloud9 IDE).",
+  "author": "SNLab",
+  "contributors": [
+    {
+      "name": "H. May Wang",
+      "email": "whr.hr.r@gmail.com"
+    },
+    {
+      "name": "J. Jensen Zhang",
+      "email": "jingxuan.n.zhang@gmail.com"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/snlab/c9.maple.git"
+    "url": "https://github.com/snlab/snlab.devopen.controller.git"
   },
   "plugins": {
-    "controllermanagement": {}
+    "management": {},
+    "manager": {}
   },
   "categories": [
     "miscellaneous"
