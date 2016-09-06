@@ -85,7 +85,7 @@ define( function(require, exports, module){
       }, plugin);
 
       // Load CSS
-      ui.insertCss(css, plugin);
+      ui.insertCss(css, false, plugin);
 
       return loaded;
     }
@@ -163,7 +163,6 @@ define( function(require, exports, module){
     // });
     plugin.on("unload", function(){
       loaded = false;
-      defaultExtension = null;
     });
 
 

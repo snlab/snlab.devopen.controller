@@ -1,3 +1,31 @@
 <?xml version='1.0'?>
 <a:skin xmlns:a="http://ajax.org/2005/aml">
+  <a:button  name="devopen-menu-btn">
+    <a:presentation>
+      <a:main caption="text()" background="." icon="div[2]" minwidth="26">
+        <div class="c9-menu-btn">
+          -
+          <div class="c9-fix"/>
+          <div class="icon"/>
+        </div>
+      </a:main>
+    </a:presentation>
+  </a:button>
+
+  <a:divider name="devopen-divider">
+    <a:presentation>
+      <a:main>
+        <div class="c9-divider"> </div>
+      </a:main>
+    </a:presentation>
+  </a:divider>
+
+  <a:bar  name="devopen-toolbar-top">
+    <a:presentation>
+      <a:main container=".">
+        <div class="toolbar-top">
+        </div>
+      </a:main>
+    </a:presentation>
+  </a:bar>
 </a:skin>

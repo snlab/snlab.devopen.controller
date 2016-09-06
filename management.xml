@@ -1,46 +1,47 @@
 <a:application xmlns:a="http://ajax.org/2005/aml">
-  <a:bar id="hbox" skin="toolbar-top" class="fakehbox aligncenter controllermanagement_buttons basic">
+  <a:bar id="hbox" skin="devopen-toolbar-top" skinset="controllers" class="fakehbox aligncenter controllers_buttons basic">
     <a:button id="btnActivate"
           tooltip  = "Activate"
           icon     = "Activate.png"
-          skin     = "c9-menu-btn"
+          skin     = "devopen-menu-btn"
+          skinset  = "controllers"
           class    = "nosize activate"
           command  = "activate"
           />
     <a:button id="btnInactivate"
           tooltip  = "Inactivate"
           icon     = "Inactivate.png"
-          skin     = "c9-menu-btn"
+          skin     = "devopen-menu-btn"
+          skinset  = "controllers"
           class    = "nosize inactivate"
           command  = "inactivate"
            />
     <a:button id="btnDelete"
           tooltip  = "Delete"
           icon     = "Delete.png"
-          skin     = "c9-menu-btn"
+          skin     = "devopen-menu-btn"
           skinset  = "controllers"
           class    = "nosize delete"
           command  = "delete"
            />
-    <a:divider  skin="c9-divider" style="margin:0 3px 0 3px" />
+    <a:divider  skin="devopen-divider" skinset="controllers" style="margin:0 3px 0 3px" />
     <a:button id="btnEdit"
           tooltip  = "Edit controllers info"
           icon     = "Edit.png"
           class    = "nosize edit"
-          skinset  = "controllers"
-          skin     = "c9-menu-btn"
-          />
+          skin     = "devopen-menu-btn"
+          skinset  = "controllers" />
     <a:button id="btnManagement"
           tooltip  = "Manage controllers info"
           icon     = "Manage.png"
           class    = "nosize manage"
-          skinset  = "controllers"
-          skin     = "c9-menu-btn" />
+          skin     = "devopen-menu-btn"
+          skinset  = "controllers" />
     <a:button id="btnAdd"
           tooltip  = "Add controller"
           icon     = "Add.png"
           class    = "nosize add"
-          skinset  = "controllers"
-          skin     = "c9-menu-btn" />
+          skin     = "devopen-menu-btn"
+          skinset  = "controllers" />
   </a:bar>
 </a:application>
