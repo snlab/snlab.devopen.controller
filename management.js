@@ -171,7 +171,7 @@ define( function(require, exports, module){
     /***** Register and define API *****/
 
     register(null, {
-      "controllermanagement": plugin
+      "controller.management": plugin
     });
   }
 });
