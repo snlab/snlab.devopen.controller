@@ -8,7 +8,7 @@
     "url": "https://github.com/snlab/c9.maple.git"
   },
   "plugins": {
-    "controllermanagement": {}
+    "management": {}
   },
   "categories": [
     "miscellaneous"

@@ -1,7 +1,7 @@
 define( function(require, exports, module){
   "use strict";
   main.consumes = ["ui", "commands", "Dialog", "dialog.error", "Panel", "dialog.confirm", "dialog.error"];
-  main.provides = ["controllermanagement"];
+  main.provides = ["controller.management"];
   return main;
 
   function main(options, imports, register){
@@ -12,13 +12,11 @@ define( function(require, exports, module){
     var confirm = imports["dialog.confirm"].show;
     var Panel = imports.Panel;
 
-    var markup = require("text!./controllermanagement.xml");
-    var css = require("text!./controllermanagement.css");
-
-    // var staticPrefix = options.staticPrefix;
+    var markup = require("text!./management.xml");
+    var css = require("text!./management.css");
 
     /***** Initialization *****/
-    var controllerpanel = new Panel("Controller List", main.consumes, {
+    var plugin = new Panel("Controller List", main.consumes, {
       index: options.index || 200,
       width: 200,
       caption: "Controller",
@@ -28,7 +26,7 @@ define( function(require, exports, module){
       where: options.where || "left"
     });
 
-    var emit = controllerpanel.getEmitter();
+    var emit = plugin.getEmitter();
     var controllers = {};
     var sources = [];
     var container, btnActivate, btnInactivate, btnDelete, btnEdit, btnManagement, btnAdd;
@@ -38,57 +36,58 @@ define( function(require, exports, module){
       if (loaded) return false;
       loaded = true;
 
-      controllerpanel.setCommand({
+      plugin.setCommand({
         name: "togglecontrollers",
         hint: "show the controller panel"
       });
 
       //commands
-
       commands.addCommand({
         name: "activate",
         exec: function(){
 
         }
-      }, controllerpanel);
+      }, plugin);
 
       commands.addCommand({
         name: "inactivate",
         exec: function(){
 
         }
-      }, controllerpanel);
+      }, plugin);
 
       commands.addCommand({
         name: "delete",
         exec: function(){
 
         }
-      }, controllerpanel);
+      }, plugin);
 
       commands.addCommand({
         name: "edit",
         exec: function(){
 
         }
-      }, controllerpanel);
+      }, plugin);
 
       commands.addCommand({
         name: "manage",
         exec: function(){
 
         }
-      }, controllerpanel);
+      }, plugin);
 
       commands.addCommand({
         name: "add",
         exec: function(){
 
         }
-      }, controllerpanel);
+      }, plugin);
 
       // Load CSS
-      ui.insertCss(css, controllerpanel);
+      ui.insertCss(css, plugin);
+
+      return loaded;
     }
 
     function draw(opts){
@@ -98,7 +97,7 @@ define( function(require, exports, module){
         data: require("text!./skin.xml"),
         "media-path" : options.staticPrefix + "/images/",
         "icon-path"  : options.staticPrefix + "/icons/"
-      }, controllerpanel);
+      }, plugin);
 
       // Create UI elements
       var bar = opts.aml;
@@ -109,15 +108,15 @@ define( function(require, exports, module){
 
       // Create UI elements
       var parent = bar;
-      ui.insertMarkup(parent, markup, controllerpanel);
+      ui.insertMarkup(parent, markup, plugin);
 
-      container = controllerpanel.getElement("hbox");
-      btnActivate = controllerpanel.getElement("btnActivate");
-      btnInactivate = controllerpanel.getElement("btnInactivate");
-      btnDelete = controllerpanel.getElement("btnDelete");
-      btnEdit = controllerpanel.getElement("btnEdit");
-      btnManagement = controllerpanel.getElement("btnManagement");
-      btnAdd = controllerpanel.getElement("btnAdd");
+      container = plugin.getElement("hbox");
+      btnActivate = plugin.getElement("btnActivate");
+      btnInactivate = plugin.getElement("btnInactivate");
+      btnDelete = plugin.getElement("btnDelete");
+      btnEdit = plugin.getElement("btnEdit");
+      btnManagement = plugin.getElement("btnManagement");
+      btnAdd = plugin.getElement("btnAdd");
 
       btnActivate.on("click", function(){
 
@@ -145,33 +144,24 @@ define( function(require, exports, module){
         caption: "Controller List"
       });
       ui.insertByIndex(scroller, frame.$ext, 200, false);
-      controllerpanel.addElement(frame);
+      plugin.addElement(frame);
     }
 
     /***** Methods *****/
 
-    // function callControllerList(){
-    //   controllerlist.show();
-    // }
-    //
-    // function invokeController(){
-    //
-    // }
-
-
 
     /***** Lifecycle *****/
 
-    controllerpanel.on("draw", function(e) {
+    plugin.on("draw", function(e) {
       draw(e);
     });
-    controllerpanel.on("load", function(){
+    plugin.on("load", function(){
       load();
     });
     // controllerpanel.on("draw", function(e) {
     //         draw(e);
     // });
-    controllerpanel.on("unload", function(){
+    plugin.on("unload", function(){
       loaded = false;
       defaultExtension = null;
     });
@@ -181,7 +171,7 @@ define( function(require, exports, module){
     /***** Register and define API *****/
 
     register(null, {
-      controllermanagement: controllerpanel
+      "controllermanagement": plugin
     });
   }
 });
