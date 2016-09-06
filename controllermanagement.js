@@ -1,35 +1,17 @@
 define( function(require, exports, module){
   "use strict";
-  main.consumes = ["Plugin", "net", "menus", "ui", "commands", "terminal", "Dialog", "c9", "dialog.error",
-  "proc", "util", "fs", "console", "tabManager", "layout", "Panel", "dialog.confirm", "dialog.error"];
+  main.consumes = ["ui", "commands", "Dialog", "dialog.error", "Panel", "dialog.confirm", "dialog.error"];
   main.provides = ["controllermanagement"];
   return main;
 
   function main(options, imports, register){
-    var Plugin = imports.Plugin;
-    var net = imports.net;
-    var menus = imports.menus;
     var ui = imports.ui;
-    var c9 = imports.c9;
     var commands = imports.commands;
     var Dialog = imports.Dialog;
     var showError = imports["dialog.error"].show;
     var confirm = imports["dialog.confirm"].show;
-    var proc = imports.proc;
-    var util = imports.util;
-    var fs = imports.fs;
-    var console = imports.console;
-    var tabManager = imports.tabManager;
     var Panel = imports.Panel;
-    // var ssh2 = require("./lib/ssh2.js");
-    var join = require("path").join;
-    var basename = require("path").basename;
-    var dirname = require("path").dirname;
 
-    var search = require("../c9.ide.navigate/search");
-    var Tree = require("ace_tree/tree");
-    var TreeData = require("ace_tree/data_provider");
-    var async = require("async");
     var markup = require("text!./controllermanagement.xml");
     var css = require("text!./controllermanagement.css");
 
@@ -53,124 +35,118 @@ define( function(require, exports, module){
 
     var loaded = false;
     function load(){
-        if (loaded) return false;
-        loaded = true;
+      if (loaded) return false;
+      loaded = true;
 
-    controllerpanel.setCommand({
-      name: "togglecontrollers",
-      hint: "show the controller panel"
-    });
+      controllerpanel.setCommand({
+        name: "togglecontrollers",
+        hint: "show the controller panel"
+      });
 
-    //commands
+      //commands
 
-    commands.addCommand({
-      name: "activate",
-      exec: function(){
+      commands.addCommand({
+        name: "activate",
+        exec: function(){
 
-      }
-    }, controllerpanel);
+        }
+      }, controllerpanel);
 
-    commands.addCommand({
-      name: "inactivate",
-      exec: function(){
+      commands.addCommand({
+        name: "inactivate",
+        exec: function(){
 
-      }
-    }, controllerpanel);
+        }
+      }, controllerpanel);
 
-    commands.addCommand({
-      name: "delete",
-      exec: function(){
+      commands.addCommand({
+        name: "delete",
+        exec: function(){
 
-      }
-    }, controllerpanel);
+        }
+      }, controllerpanel);
 
-    commands.addCommand({
-      name: "edit",
-      exec: function(){
+      commands.addCommand({
+        name: "edit",
+        exec: function(){
 
-      }
-    }, controllerpanel);
+        }
+      }, controllerpanel);
 
-    commands.addCommand({
-      name: "manage",
-      exec: function(){
+      commands.addCommand({
+        name: "manage",
+        exec: function(){
 
-      }
-    }, controllerpanel);
+        }
+      }, controllerpanel);
 
-    commands.addCommand({
-      name: "add",
-      exec: function(){
+      commands.addCommand({
+        name: "add",
+        exec: function(){
 
-      }
-    }, controllerpanel);
+        }
+      }, controllerpanel);
 
-    // Load CSS
-    ui.insertCss(css, controllerpanel);
-  }
+      // Load CSS
+      ui.insertCss(css, controllerpanel);
+    }
 
-  function draw(opts){
-    //Import Skin
-    ui.insertSkin({
-      name: "controllers",
-      data: require("text!./skin.xml"),
-      "media-path" : options.staticPrefix + "/images/",
-      "icon-path"  : options.staticPrefix + "/icons/"
-    }, controllerpanel);
+    function draw(opts){
+      //Import Skin
+      ui.insertSkin({
+        name: "controllers",
+        data: require("text!./skin.xml"),
+        "media-path" : options.staticPrefix + "/images/",
+        "icon-path"  : options.staticPrefix + "/icons/"
+      }, controllerpanel);
 
-    // Create UI elements
-    var bar = opts.aml;
+      // Create UI elements
+      var bar = opts.aml;
 
-    var scroller = bar.$ext.appendChild(document.createElement("div"));
-    // opts.html.innerHTML = "HELLO";
-    scroller.className = "scroller";
+      var scroller = bar.$ext.appendChild(document.createElement("div"));
+      // opts.html.innerHTML = "HELLO";
+      scroller.className = "scroller";
 
-    // Create UI elements
-    var parent = bar;
-    ui.insertMarkup(parent, markup, controllerpanel);
+      // Create UI elements
+      var parent = bar;
+      ui.insertMarkup(parent, markup, controllerpanel);
 
-    container = controllerpanel.getElement("hbox");
-    btnActivate = controllerpanel.getElement("btnActivate");
-    btnInactivate = controllerpanel.getElement("btnInactivate");
-    btnDelete = controllerpanel.getElement("btnDelete");
-    btnEdit = controllerpanel.getElement("btnEdit");
-    btnManagement = controllerpanel.getElement("btnManagement");
-    btnAdd = controllerpanel.getElement("btnAdd");
+      container = controllerpanel.getElement("hbox");
+      btnActivate = controllerpanel.getElement("btnActivate");
+      btnInactivate = controllerpanel.getElement("btnInactivate");
+      btnDelete = controllerpanel.getElement("btnDelete");
+      btnEdit = controllerpanel.getElement("btnEdit");
+      btnManagement = controllerpanel.getElement("btnManagement");
+      btnAdd = controllerpanel.getElement("btnAdd");
 
-    btnActivate.on("click", function(){
+      btnActivate.on("click", function(){
 
-    });
-    btnInactivate.on("click", function(){
+      });
+      btnInactivate.on("click", function(){
 
-    });
-    btnDelete.on("click", function(){
+      });
+      btnDelete.on("click", function(){
 
-    });
-    btnEdit.on("click", function(){
+      });
+      btnEdit.on("click", function(){
 
-    });
-    btnManagement.on("click", function(){
+      });
+      btnManagement.on("click", function(){
 
-    });
-    btnAdd.on("click", function(){
+      });
+      btnAdd.on("click", function(){
 
-    });
+      });
 
-    var frame = ui.frame({
-      htmlNode: scroller,
-      buttons: "min",
-      activetitle: "min",
-      caption: "Controller List"
-    });
-    ui.insertByIndex(scroller, frame.$ext, 200, false);
-    controllerpanel.addElement(frame);
-    // emit.sticky("draw", { aml: frame, html: frame.$int });
-  }
-
-    // controllerpanel.on("draw", function(e) {
-    //   e.html.innerHTML = "Hello World!";
-    // });
-
+      var frame = ui.frame({
+        htmlNode: scroller,
+        buttons: "min",
+        activetitle: "min",
+        caption: "Controller List"
+      });
+      ui.insertByIndex(scroller, frame.$ext, 200, false);
+      controllerpanel.addElement(frame);
+    }
 
     /***** Methods *****/
 
@@ -187,25 +163,25 @@ define( function(require, exports, module){
     /***** Lifecycle *****/
 
     controllerpanel.on("draw", function(e) {
-            draw(e);
+      draw(e);
     });
     controllerpanel.on("load", function(){
-            load();
+      load();
     });
     // controllerpanel.on("draw", function(e) {
     //         draw(e);
     // });
     controllerpanel.on("unload", function(){
-        loaded = false;
-        defaultExtension = null;
+      loaded = false;
+      defaultExtension = null;
     });
 
 
 
     /***** Register and define API *****/
 
-      register(null, {
-        controllermanagement: controllerpanel
-      });
+    register(null, {
+      controllermanagement: controllerpanel
+    });
   }
 });
