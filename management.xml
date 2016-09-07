@@ -29,18 +29,21 @@
           tooltip  = "Edit controllers info"
           icon     = "Edit.png"
           class    = "nosize edit"
+          command  = "edit"
           skin     = "devopen-menu-btn"
           skinset  = "controllers" />
     <a:button id="btnManagement"
           tooltip  = "Manage controllers info"
           icon     = "Manage.png"
           class    = "nosize manage"
+          command  = "manage"
           skin     = "devopen-menu-btn"
           skinset  = "controllers" />
     <a:button id="btnAdd"
           tooltip  = "Add controller"
           icon     = "Add.png"
           class    = "nosize add"
+          command  = "add"
           skin     = "devopen-menu-btn"
           skinset  = "controllers" />
   </a:bar>
