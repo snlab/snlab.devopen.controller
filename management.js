@@ -342,7 +342,7 @@ define( function(require, exports, module){
         if (err) throw err;
         if (res.status == 200) {
           tabManager.open({
-            name: "controller-" + controller.name,
+            name: "controller-" + controller.uuid,
             editorType : "preview",
             document   : {
               title: "[C]" + controller.name,
@@ -365,6 +365,7 @@ define( function(require, exports, module){
       }, function(err, data, res) {
         if (err) throw err;
         if (res.status == 200) {
+          tabManager.findTab("controller-" + controller.uuid).close();
           reloadCtrlModel();
         }
       });
