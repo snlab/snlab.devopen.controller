@@ -5,7 +5,7 @@
           icon     = "Activate.png"
           skin     = "devopen-menu-btn"
           skinset  = "controllers"
-          class    = "nosize activate"
+          class    = "cover activate"
           command  = "activate"
           />
     <a:button id="btnInactivate"
@@ -13,7 +13,7 @@
           icon     = "Inactivate.png"
           skin     = "devopen-menu-btn"
           skinset  = "controllers"
-          class    = "nosize inactivate"
+          class    = "cover inactivate"
           command  = "inactivate"
            />
     <a:button id="btnDelete"
@@ -21,28 +21,28 @@
           icon     = "Delete.png"
           skin     = "devopen-menu-btn"
           skinset  = "controllers"
-          class    = "nosize delete"
+          class    = "cover delete"
           command  = "delete"
            />
     <a:divider  skin="devopen-divider" skinset="controllers" style="margin:0 3px 0 3px" />
     <a:button id="btnEdit"
           tooltip  = "Edit controllers info"
           icon     = "Edit.png"
-          class    = "nosize edit"
+          class    = "cover edit"
           command  = "edit"
           skin     = "devopen-menu-btn"
           skinset  = "controllers" />
     <a:button id="btnManagement"
           tooltip  = "Manage controllers info"
           icon     = "Manage.png"
-          class    = "nosize manage"
+          class    = "cover manage"
           command  = "manage"
           skin     = "devopen-menu-btn"
           skinset  = "controllers" />
     <a:button id="btnAdd"
           tooltip  = "Add controller"
           icon     = "Add.png"
-          class    = "nosize add"
+          class    = "cover add"
           command  = "add"
           skin     = "devopen-menu-btn"
           skinset  = "controllers" />

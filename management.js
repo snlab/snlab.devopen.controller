@@ -95,6 +95,8 @@ define( function(require, exports, module){
         name: "manage",
         exec: function(){
           // TODO: manage
+          var item = datagrid.selection.getCursor();
+          selectMapleApp(item);
         }
       }, plugin);
 
@@ -103,6 +105,28 @@ define( function(require, exports, module){
         group: "DevOpen",
         exec: addController
       }, plugin);
+
+      // Context menu for tree
+      var itemCtxTreeDeploy = new ui.item({
+        match: "folder",
+        caption: "Deploy",
+        isAvailable: function(){
+          // TODO: Need more complex validation
+          return tree.selectedNode && tree.selectedNode.isFolder;
+        },
+        onclick: function(){
+          // openPreview(tree.selected);
+          if (cacheList.length) {
+            deployMapleAppFromKar(cacheList[0], tree.selected);
+          }
+          else {
+            alert("No controller to deploy, please add one!");
+          }
+        }
+      });
+      tree.getElement("mnuCtxTree", function(mnuCtxTree) {
+        ui.insertByIndex(mnuCtxTree, itemCtxTreeDeploy, 170, plugin);
+      });
 
       // Load CSS
       ui.insertCss(css, false, plugin);

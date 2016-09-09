@@ -1,9 +1,13 @@
-.controllercontainer .scroller{
-    position : absolute;
-    overflow-y : auto;
-    overflow-x : hidden;
-    top : 26px;
-    left : 0;
-    right : 0;
-    bottom : 26px;
+.controllercontainer .scroller {
+  position : absolute;
+  overflow-y : auto;
+  overflow-x : hidden;
+  top : 26px;
+  left : 0;
+  right : 0;
+  bottom : 26px;
+}
+
+.c9-menu-btn.cover .icon {
+  background-size: cover;
 }
