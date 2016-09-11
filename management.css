@@ -11,3 +11,10 @@
 .c9-menu-btn.cover .icon {
   background-size: cover;
 }
+
+.tree-column .icon.cover {
+  background-size: cover;
+  display: block;
+  width: 14px;
+  height: 14px;
+}

@@ -28,6 +28,10 @@ define( function(require, exports, module){
 
     var cacheList = [];
 
+    var INTERVAL_MS = 10000;
+    var TIMEOUT_MS = 8000;
+    var REFRESH_DELAY = 9000;
+
     /***** Initialization *****/
     var plugin = new Panel("Controller List", main.consumes, {
       index: options.index || 200,
@@ -48,6 +52,7 @@ define( function(require, exports, module){
 
     var container, btnActivate, btnInactivate, btnDelete, btnEdit, btnManagement, btnAdd;
     var ctrlModel, datagrid, ctrlform;
+    var intervalUpdate;
 
     var loaded = false;
     function load(){
@@ -151,7 +156,6 @@ define( function(require, exports, module){
       var bar = e.aml;
 
       var scroller = bar.$ext.appendChild(document.createElement("div"));
-      // opts.html.innerHTML = "HELLO";
       scroller.className = "scroller";
 
       // Create UI elements
@@ -165,25 +169,6 @@ define( function(require, exports, module){
       btnEdit = plugin.getElement("btnEdit");
       btnManagement = plugin.getElement("btnManagement");
       btnAdd = plugin.getElement("btnAdd");
-
-      btnActivate.on("click", function(){
-        // TODO: activate ui
-      });
-      btnInactivate.on("click", function(){
-        // TODO: inactivate ui
-      });
-      btnDelete.on("click", function(){
-        // TODO: delete selected controller
-      });
-      btnEdit.on("click", function(){
-        // TODO: edit controller information
-      });
-      btnManagement.on("click", function(){
-        // TODO: show controller management ui
-      });
-      btnAdd.on("click", function(){
-        // TODO: add a controller
-      });
 
       var frame = ui.frame({
         htmlNode: scroller,
@@ -212,7 +197,15 @@ define( function(require, exports, module){
       }, {
         caption: "Status",
         value: "status",
-        width: "50"
+        width: "50",
+        getText: function(node) {
+          return node.status.ssh;
+        },
+        getHTML: function(node) {
+          return "<span class='icon cover' style='background-image: url(" +
+            options.staticPrefix + "/icons/" +
+            (node.status.ssh || "unknown") + ".png)'></span>";
+        }
       }];
 
       layout.on("eachTheme", function(e){
@@ -262,6 +255,8 @@ define( function(require, exports, module){
           reloadCtrlModel();
         });
       });
+
+      var intervalUpdate = setInterval(updateSSHStatus, INTERVAL_MS);
 
       return loaded;
     }
@@ -395,6 +390,28 @@ define( function(require, exports, module){
       });
     }
 
+    function updateSSHStatus() {
+      var rows = ctrlModel.root.children;
+      var status = {};
+      rows.forEach(function(row) {
+        http.request(endpoint + '/testssh/' + row.uuid, {
+          timeout: TIMEOUT_MS
+        }, function(err, data, res) {
+          if (err) throw err;
+          if (res.status == 200) {
+            status[row.uuid] = data.status;
+          }
+        });
+      });
+      setTimeout(function() {
+        var current = ctrlModel.root.children;
+        current.forEach(function(row) {
+          row.status.ssh = status[row.uuid] || row.status.ssh;
+        });
+        ctrlModel.setRoot({children: current});
+      }, REFRESH_DELAY);
+    }
+
     /***** Lifecycle *****/
 
     addCtrlDialog.on("draw", function(e) {
@@ -484,6 +501,7 @@ define( function(require, exports, module){
       loaded = false;
       drawn = false;
 
+      clearInterval(intervalUpdate);
       ctrlModel = null;
       datagrid = null;
     });
