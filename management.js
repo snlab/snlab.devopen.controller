@@ -24,6 +24,7 @@ define( function(require, exports, module){
 
     var Tree = require("ace_tree/tree");
     var TreeData = require("./controllerdp");
+    var TreeEditor = require("ace_tree/edit");
     var endpoint = "http://" + location.hostname + ":3000";
 
     var markup = require("text!./management.xml");
@@ -264,6 +265,7 @@ define( function(require, exports, module){
         caption: "Value",
         value: "value",
         width: "100%",
+        editor: "textbox",
         getText: function(node) {
           if (node.argument == "password") {
             return "********";
@@ -271,8 +273,6 @@ define( function(require, exports, module){
           return node.value;
         }
       }];
-
-      reloadCtrlModel();
 
       ui.insertMarkup(listFrame, cdatagridMarkup, plugin);
       var cdatagridEl = plugin.getElement("cdatagrid");
@@ -289,6 +289,7 @@ define( function(require, exports, module){
       idatagrid.renderer.setTheme({ cssClass: "blackdg" });
       idatagrid.setOption("maxLines", 200);
       idatagrid.setDataProvider(infoModel);
+      idatagrid.edit = new TreeEditor(idatagrid);
 
       /**
        * Lifecycle for datagrid
@@ -324,13 +325,23 @@ define( function(require, exports, module){
         });
       });
 
-      datagrid.on("select", function() {
+      datagrid.on("changeSelection", function() {
         reloadInfoModel();
       });
 
       idatagrid.on("mousemove", function() {
         idatagrid.resize(true);
       });
+
+      idatagrid.on("beforeRename", function() {
+        // TODO: validate rename value
+      });
+
+      idatagrid.on("rename", function() {
+        // TODO: rename value and post to sqlite3
+      });
+
+      reloadCtrlModel();
 
       var intervalUpdate = setInterval(updateSSHStatus, INTERVAL_MS);
 
@@ -380,7 +391,7 @@ define( function(require, exports, module){
           value: item.login
         },
         {
-          argument: "ssh password",
+          argument: "password",
           value: item.password
         }
       ]});

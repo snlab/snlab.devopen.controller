@@ -131,7 +131,7 @@ function deployKarViaSSH(target, controller) {
           'file:${karaf.base}/${karaf.default.repository}@id=child.system.repository@snapshots"',
         ].join(' '),
         'config:update',
-        'kar:install file:' + target,
+        'kar:install file:${karaf.home}' + target,
         'exit',
         ''
       ].join('\n'));
