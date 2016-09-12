@@ -1,6 +1,6 @@
 define( function(require, exports, module){
   "use strict";
-  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "fs", "Form"];
+  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "fs", "Form", "run", "c9"];
   main.provides = ["controller.management"];
   return main;
 
@@ -17,6 +17,9 @@ define( function(require, exports, module){
     var fileDialog = imports["dialog.file"];
     var fs = imports.fs;
     var Form = imports.Form;
+    var run = imports.run;
+    var c9 = imports.c9;
+    var join = require("path").join;
 
     var Tree = require("ace_tree/tree");
     var TreeData = require("./controllerdp");
@@ -76,7 +79,6 @@ define( function(require, exports, module){
       commands.addCommand({
         name: "inactivate",
         exec: function(){
-          // TODO: inactivate
           var item = datagrid.selection.getCursor();
           inactivateController(item);
         }
@@ -101,7 +103,7 @@ define( function(require, exports, module){
         exec: function(){
           // TODO: manage
           var item = datagrid.selection.getCursor();
-          selectMapleApp(item);
+          selectProjectToDeploy(item);
         }
       }, plugin);
 
@@ -120,12 +122,13 @@ define( function(require, exports, module){
           return tree.selectedNode && tree.selectedNode.isFolder;
         },
         onclick: function(){
-          // openPreview(tree.selected);
           if (cacheList.length) {
-            deployMapleAppFromKar(cacheList[0], tree.selected);
+            deployKarToController(cacheList[0],
+                                  join(c9.workspaceDir, tree.selected));
           }
           else {
-            alert("No controller to deploy, please add one!");
+            alert("No controller to deploy, you need to configure a default controller or add a new one.");
+            // TODO: go to controller panel
           }
         }
       });
@@ -180,7 +183,6 @@ define( function(require, exports, module){
       plugin.addElement(frame);
 
 
-      // TODO: Show datagrid
       ctrlModel = new TreeData();
       ctrlModel.emptyMessage = "No controller to display";
       ctrlModel.$sortNodes = false;
@@ -220,7 +222,6 @@ define( function(require, exports, module){
 
       reloadCtrlModel();
 
-      // TODO: introduce datagrid aml definition
       ui.insertMarkup(frame, datagridMarkup, plugin);
       var datagridEl = plugin.getElement("datagrid");
 
@@ -281,7 +282,6 @@ define( function(require, exports, module){
     }
 
     function removeController(uuid) {
-      // TODO: replace to restful api
       http.request(endpoint + '/controllers' + '/' + uuid, {
         method: "DELETE"
       }, function(err, data, res) {
@@ -318,16 +318,16 @@ define( function(require, exports, module){
       }
     }
 
-    function selectMapleApp(controller) {
+    function selectProjectToDeploy(controller) {
       fileDialog.show("Select a bundle or kar", "", function(path, stat, done) {
         fs.readFile(path, function(err, data) {
           if (err) throw err;
 
           var ext = path.split(".").pop();
-          if (ext === "jar") {
-            deployMapleAppFromBundle(controller, path);
-          } else if (ext === "kar") {
-            deployMapleAppFromKar(controller, path);
+          if (ext === "kar") {
+            deployKarToController(controller, join(c9.workspaceDir, path));
+          } else {
+            alert("No *.kar file selected!");
           }
           fileDialog.hide();
         });
@@ -339,19 +339,27 @@ define( function(require, exports, module){
       });
     }
 
-    function deployMapleAppFromBundle(controller, path) {
-      // Deploy mapleapp.jar
-      // alert(vfs.url(path) + "\nid: " + controller.id + "\ntab: " + controller.tab);
-      tabManager.getTabs().filter(function(t) {
-        return t.name === controller.tab;
-      }).forEach(function(tab) {
-        tab.editor.write("bundle:install " + vfs.url(path) + "\n");
-      });
-    }
-
-    function deployMapleAppFromKar(controller, path) {
+    function deployKarToController(controller, path) {
       // Deploy mapleapp.kar
       alert("<p>Controller: " + controller + "</p><p>Path: " + path + "</p>");
+
+      // TODO: set or update default runner configuration
+      var configs = settings.getJson("/project/run/configs") || {};
+      configs["default controller"] = {
+        command: [path,
+                    '-c', controller.ip,
+                    '-p', controller.sshPort,
+                    '-l', controller.login,
+                    '-P', controller.password].join(' '),
+        default: true,
+        name: "default controller",
+        runner: "devopen",
+        toolbar: true
+      };
+      settings.setJson("project/run/configs", configs);
+
+      // TODO: deploy target project to the default controller
+      commands.exec("run");
     }
 
     function activateController(controller) {
@@ -410,6 +418,9 @@ define( function(require, exports, module){
         });
         ctrlModel.setRoot({children: current});
       }, REFRESH_DELAY);
+    }
+
+    function defaultRunner() {
     }
 
     /***** Lifecycle *****/
@@ -491,12 +502,11 @@ define( function(require, exports, module){
     plugin.on("draw", function(e) {
       draw(e);
     });
+
     plugin.on("load", function(){
       load();
     });
-    // controllerpanel.on("draw", function(e) {
-    //         draw(e);
-    // });
+
     plugin.on("unload", function(){
       loaded = false;
       drawn = false;
@@ -506,9 +516,14 @@ define( function(require, exports, module){
       datagrid = null;
     });
 
-
-
     /***** Register and define API *****/
+
+    plugin.freezePublicAPI({
+      /**
+       *
+       */
+      defaultRunner: defaultRunner
+    });
 
     register(null, {
       "controller.management": plugin

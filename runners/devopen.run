@@ -1,0 +1,5 @@
+{
+    "cmd": ["deploy", "$command", "$args"],
+    "default": true,
+    "env": {}
+}
