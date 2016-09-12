@@ -1,6 +1,6 @@
 define( function(require, exports, module){
   "use strict";
-  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "fs", "Form", "run", "c9"];
+  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "dialog.confirm", "fs", "Form", "run", "c9"];
   main.provides = ["controller.management"];
   return main;
 
@@ -15,6 +15,7 @@ define( function(require, exports, module){
     var layout = imports.layout;
     var settings = imports.settings;
     var fileDialog = imports["dialog.file"];
+    var confirm = imports["dialog.confirm"].show;
     var fs = imports.fs;
     var Form = imports.Form;
     var run = imports.run;
@@ -27,7 +28,8 @@ define( function(require, exports, module){
 
     var markup = require("text!./management.xml");
     var css = require("text!./management.css");
-    var datagridMarkup = require("text!./datagrid.xml");
+    var cdatagridMarkup = require("text!./cdatagrid.xml");
+    var idatagridMarkup = require("text!./idatagrid.xml");
 
     var cacheList = [];
 
@@ -36,7 +38,7 @@ define( function(require, exports, module){
     var REFRESH_DELAY = 9000;
 
     /***** Initialization *****/
-    var plugin = new Panel("Controller List", main.consumes, {
+    var plugin = new Panel("snlab.org", main.consumes, {
       index: options.index || 200,
       width: 200,
       caption: "Controller",
@@ -53,12 +55,14 @@ define( function(require, exports, module){
       title: "Add Controller"
     });
 
-    var container, btnActivate, btnInactivate, btnDelete, btnEdit, btnManagement, btnAdd;
+    // var container, btnActivate, btnInactivate, btnDelete;
+    // var btnEdit, btnManagement, btnAdd, btnMark;
     var ctrlModel, datagrid, ctrlform;
+    var infoModel, idatagrid;
     var intervalUpdate;
 
     var loaded = false;
-    function load(){
+    function load() {
       if (loaded) return false;
       loaded = true;
 
@@ -78,7 +82,7 @@ define( function(require, exports, module){
 
       commands.addCommand({
         name: "inactivate",
-        exec: function(){
+        exec: function() {
           var item = datagrid.selection.getCursor();
           inactivateController(item);
         }
@@ -86,21 +90,21 @@ define( function(require, exports, module){
 
       commands.addCommand({
         name: "delete",
-        exec: function(){
+        exec: function() {
           datagrid.execCommand("delete");
         }
       }, plugin);
 
       commands.addCommand({
         name: "edit",
-        exec: function(){
+        exec: function() {
           // TODO: edit
         }
       }, plugin);
 
       commands.addCommand({
         name: "manage",
-        exec: function(){
+        exec: function() {
           // TODO: manage
           var item = datagrid.selection.getCursor();
           selectProjectToDeploy(item);
@@ -113,22 +117,40 @@ define( function(require, exports, module){
         exec: addController
       }, plugin);
 
+      commands.addCommand({
+        name: "mark",
+        group: "DevOpen",
+        exec: function() {
+          var item = datagrid.selection.getCursor();
+          settings.set("project/devopen/@default_controller", item.uuid);
+          reloadCtrlModel();
+        }
+      }, plugin);
+
       // Context menu for tree
       var itemCtxTreeDeploy = new ui.item({
         match: "folder",
         caption: "Deploy",
-        isAvailable: function(){
+        isAvailable: function() {
           // TODO: Need more complex validation
           return tree.selectedNode && tree.selectedNode.isFolder;
         },
-        onclick: function(){
-          if (cacheList.length) {
-            deployKarToController(cacheList[0],
+        onclick: function() {
+          var uuid = settings.get("project/devopen/@default_controller");
+          var controller = cacheList.find(function(e) {
+            return e.uuid == uuid;
+          });
+          if (controller) {
+            deployKarToController(controller,
                                   join(c9.workspaceDir, tree.selected));
           }
           else {
-            alert("No controller to deploy, you need to configure a default controller or add a new one.");
-            // TODO: go to controller panel
+            confirm("No default controller?",
+                    "No controller to deploy, you need to configure a default controller or add a new one.",
+                    "Would you like to go to controller panel?",
+                    function() {
+                      commands.exec("togglecontrollers");
+                    });
           }
         }
       });
@@ -143,7 +165,7 @@ define( function(require, exports, module){
     }
 
     var drawn = false;
-    function draw(e){
+    function draw(e) {
       if (drawn) return false;
       drawn = true;
 
@@ -158,31 +180,43 @@ define( function(require, exports, module){
       // Create UI elements
       var bar = e.aml;
 
-      var scroller = bar.$ext.appendChild(document.createElement("div"));
-      scroller.className = "scroller";
-
       // Create UI elements
       var parent = bar;
       ui.insertMarkup(parent, markup, plugin);
 
-      container = plugin.getElement("hbox");
-      btnActivate = plugin.getElement("btnActivate");
-      btnInactivate = plugin.getElement("btnInactivate");
-      btnDelete = plugin.getElement("btnDelete");
-      btnEdit = plugin.getElement("btnEdit");
-      btnManagement = plugin.getElement("btnManagement");
-      btnAdd = plugin.getElement("btnAdd");
+      // container = plugin.getElement("hbox");
+      // btnActivate = plugin.getElement("btnActivate");
+      // btnInactivate = plugin.getElement("btnInactivate");
+      // btnDelete = plugin.getElement("btnDelete");
+      // btnEdit = plugin.getElement("btnEdit");
+      // btnManagement = plugin.getElement("btnManagement");
+      // btnAdd = plugin.getElement("btnAdd");
+      // btnMark = plugin.getElement("btnMark");
 
-      var frame = ui.frame({
+      var scroller = bar.$ext.appendChild(document.createElement("div"));
+      scroller.className = "scroller";
+
+      var listFrame = ui.frame({
         htmlNode: scroller,
         buttons: "min",
         activetitle: "min",
         caption: "Controller List"
       });
-      ui.insertByIndex(scroller, frame.$ext, 200, false);
-      plugin.addElement(frame);
+      ui.insertByIndex(scroller, listFrame.$ext, 200, false);
+      plugin.addElement(listFrame);
 
+      var infoFrame = ui.frame({
+        htmlNode: scroller,
+        butons: "min",
+        activetitle: "min",
+        caption: "More Information"
+      });
+      ui.insertByIndex(scroller, infoFrame.$ext, 300, false);
+      plugin.addElement(infoFrame);
 
+      /**
+       * Data Provider for Controller List
+       */
       ctrlModel = new TreeData();
       ctrlModel.emptyMessage = "No controller to display";
       ctrlModel.$sortNodes = false;
@@ -191,11 +225,15 @@ define( function(require, exports, module){
       ctrlModel.columns = [{
         caption: "UUID",
         value: "uuid",
-        width: "60%"
+        width: "40%"
       }, {
         caption: "Name",
         value: "name",
-        width: "40%"
+        width: "60%",
+        getText: function(node) {
+          return node.name +
+            (isDefaultController(node.uuid) ? " (default)" : "");
+        }
       }, {
         caption: "Status",
         value: "status",
@@ -210,40 +248,69 @@ define( function(require, exports, module){
         }
       }];
 
+      /**
+       * Data Provider for Controller Information
+       */
+      infoModel = new TreeData();
+      infoModel.emptyMessage = "No information to display";
+      infoModel.$sortNodes = false;
+
+      infoModel.$sorted = false;
+      infoModel.columns = [{
+        caption: "Argument",
+        value: "argument",
+        width: "100px"
+      }, {
+        caption: "Value",
+        value: "value",
+        width: "100%",
+        getText: function(node) {
+          if (node.argument == "password") {
+            return "********";
+          }
+          return node.value;
+        }
+      }];
+
+      reloadCtrlModel();
+
+      ui.insertMarkup(listFrame, cdatagridMarkup, plugin);
+      var cdatagridEl = plugin.getElement("cdatagrid");
+
+      datagrid = new Tree(cdatagridEl.$ext);
+      datagrid.renderer.setTheme({ cssClass: "blackdg" });
+      datagrid.setOption("maxLines", 200);
+      datagrid.setDataProvider(ctrlModel);
+
+      ui.insertMarkup(infoFrame, idatagridMarkup, plugin);
+      var idatagridEl = plugin.getElement("idatagrid");
+
+      idatagrid = new Tree(idatagridEl.$ext);
+      idatagrid.renderer.setTheme({ cssClass: "blackdg" });
+      idatagrid.setOption("maxLines", 200);
+      idatagrid.setDataProvider(infoModel);
+
+      /**
+       * Lifecycle for datagrid
+       */
       layout.on("eachTheme", function(e){
         var height = parseInt(ui.getStyleRule(".bar-preferences .blackdg .tree-row", "height"), 10) || 24;
         ctrlModel.rowHeightInner = height;
         ctrlModel.rowHeight = height;
 
+        infoModel.rowHeightInner = height;
+        infoModel.rowHeight = height;
+
         if (e.changed) {
           datagrid.resize(true);
+          idatagrid.resize(true);
         }
       });
 
-      reloadCtrlModel();
-
-      ui.insertMarkup(frame, datagridMarkup, plugin);
-      var datagridEl = plugin.getElement("datagrid");
-
-      // var div = frame.$ext.appendChild(document.createElement("div"));
-      // div.style.width = "100%";
-      // div.style.height = "200px";
-      // div.style.marginTop = "50px";
-
-      datagrid = new Tree(datagridEl.$ext);
-      datagrid.renderer.setTheme({ cssClass: "blackdg" });
-      datagrid.setOption("maxLines", 200);
-      datagrid.setDataProvider(ctrlModel);
-
       layout.on("resize", function() {
         datagrid.resize();
+        idatagrid.resize();
       }, plugin);
-
-      function setTheme(e) {
-        // TODO
-      }
-      layout.on("themeChange", setTheme);
-      setTheme({ theme: settings.get("user/general/@skin") });
 
       datagrid.on("mousemove", function() {
         datagrid.resize(true);
@@ -255,6 +322,14 @@ define( function(require, exports, module){
           removeController(node.uuid);
           reloadCtrlModel();
         });
+      });
+
+      datagrid.on("select", function() {
+        reloadInfoModel();
+      });
+
+      idatagrid.on("mousemove", function() {
+        idatagrid.resize(true);
       });
 
       var intervalUpdate = setInterval(updateSSHStatus, INTERVAL_MS);
@@ -275,6 +350,40 @@ define( function(require, exports, module){
         }
       });
 
+    }
+
+    function reloadInfoModel() {
+      if (!infoModel || !datagrid.selection.getCursor()) {
+        return;
+      }
+
+      var item = datagrid.selection.getCursor();
+      infoModel.setRoot({children : [
+        {
+          argument: "name",
+          value: item.name
+        },
+        {
+          argument: "ip address",
+          value: item.ip
+        },
+        {
+          argument: "restful port",
+          value: item.restPort
+        },
+        {
+          argument: "ssh port",
+          value: item.sshPort
+        },
+        {
+          argument: "ssh login",
+          value: item.login
+        },
+        {
+          argument: "ssh password",
+          value: item.password
+        }
+      ]});
     }
 
     function addController() {
@@ -340,10 +449,6 @@ define( function(require, exports, module){
     }
 
     function deployKarToController(controller, path) {
-      // Deploy mapleapp.kar
-      alert("<p>Controller: " + controller + "</p><p>Path: " + path + "</p>");
-
-      // TODO: set or update default runner configuration
       var configs = settings.getJson("/project/run/configs") || {};
       configs["default controller"] = {
         command: [path,
@@ -358,7 +463,6 @@ define( function(require, exports, module){
       };
       settings.setJson("project/run/configs", configs);
 
-      // TODO: deploy target project to the default controller
       commands.exec("run");
     }
 
@@ -370,14 +474,14 @@ define( function(require, exports, module){
         if (res.status == 200) {
           tabManager.open({
             name: "controller-" + controller.uuid,
-            editorType : "preview",
-            document   : {
+            editorType: "preview",
+            document: {
               title: "[C]" + controller.name,
               preview: {
                 path: location.protocol + "//" + location.hostname + ":" + data.port
               }
             },
-            active     : true
+            active: true
           }, function(err, tab, done, existing) {
             if (existing)
               tab.editor.reload();
@@ -421,6 +525,10 @@ define( function(require, exports, module){
     }
 
     function defaultRunner() {
+    }
+
+    function isDefaultController(uuid) {
+      return settings.get("project/devopen/@default_controller") == uuid;
     }
 
     /***** Lifecycle *****/
