@@ -67,7 +67,7 @@ define( function(require, exports, module){
     });
 
     // var container, btnActivate, btnInactivate, btnDelete;
-    // var btnEdit, btnManagement, btnAdd, btnMark;
+    // var btnManagement, btnAdd, btnMark;
     var ctrlModel, datagrid, ctrlform;
     var infoModel, idatagrid;
     var intervalUpdate;
@@ -107,18 +107,10 @@ define( function(require, exports, module){
       }, plugin);
 
       commands.addCommand({
-        name: "edit",
-        exec: function() {
-          // TODO: edit
-        }
-      }, plugin);
-
-      commands.addCommand({
         name: "manage",
         exec: function() {
           // TODO: manage
-          var item = datagrid.selection.getCursor();
-          selectProjectToDeploy(item);
+          alert("Unsupported function");
         }
       }, plugin);
 
@@ -199,7 +191,6 @@ define( function(require, exports, module){
       // btnActivate = plugin.getElement("btnActivate");
       // btnInactivate = plugin.getElement("btnInactivate");
       // btnDelete = plugin.getElement("btnDelete");
-      // btnEdit = plugin.getElement("btnEdit");
       // btnManagement = plugin.getElement("btnManagement");
       // btnAdd = plugin.getElement("btnAdd");
       // btnMark = plugin.getElement("btnMark");
@@ -218,7 +209,7 @@ define( function(require, exports, module){
 
       var infoFrame = ui.frame({
         htmlNode: scroller,
-        butons: "min",
+        buttons: "min",
         activetitle: "min",
         caption: "More Information"
       });

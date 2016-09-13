@@ -16,6 +16,23 @@
           class    = "nosize inactivate"
           command  = "inactivate"
            />
+    <a:button id="btnManagement"
+          tooltip  = "Open CLI to manage controller"
+          icon     = "manage.png"
+          class    = "nosize manage"
+          command  = "manage"
+          skin     = "devopen-menu-btn"
+          skinset  = "controllers"
+          />
+    <a:divider  skin="devopen-divider" skinset="controllers" style="margin:0 3px 0 3px" />
+    <a:button id="btnAdd"
+          tooltip  = "Add controller"
+          icon     = "add.png"
+          class    = "nosize add"
+          command  = "add"
+          skin     = "devopen-menu-btn"
+          skinset  = "controllers"
+          />
     <a:button id="btnDelete"
           tooltip  = "Delete"
           icon     = "delete.png"
@@ -24,34 +41,13 @@
           class    = "nosize delete"
           command  = "delete"
            />
-    <a:divider  skin="devopen-divider" skinset="controllers" style="margin:0 3px 0 3px" />
-    <a:button id="btnEdit"
-          tooltip  = "Edit controllers info"
-          icon     = "edit.png"
-          class    = "nosize edit"
-          command  = "edit"
-          skin     = "devopen-menu-btn"
-          skinset  = "controllers" />
-    <a:button id="btnManagement"
-          tooltip  = "Manage controllers info"
-          icon     = "manage.png"
-          class    = "nosize manage"
-          command  = "manage"
-          skin     = "devopen-menu-btn"
-          skinset  = "controllers" />
-    <a:button id="btnAdd"
-          tooltip  = "Add controller"
-          icon     = "add.png"
-          class    = "nosize add"
-          command  = "add"
-          skin     = "devopen-menu-btn"
-          skinset  = "controllers" />
     <a:button id="btnMark"
           tooltip  = "Mark as default"
           icon     = "mark.png"
           class    = "nosize mark"
           command  = "mark"
           skin     = "devopen-menu-btn"
-          skinset  = "controllers" />
+          skinset  = "controllers"
+          />
   </a:bar>
 </a:application>
