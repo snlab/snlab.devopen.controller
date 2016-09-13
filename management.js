@@ -1,6 +1,6 @@
 define( function(require, exports, module){
   "use strict";
-  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "dialog.confirm", "fs", "Form", "run", "c9"];
+  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "dialog.confirm", "dialog.alert", "dialog.error", "fs", "Form", "run", "c9"];
   main.provides = ["controller.management"];
   return main;
 
@@ -16,6 +16,8 @@ define( function(require, exports, module){
     var settings = imports.settings;
     var fileDialog = imports["dialog.file"];
     var confirm = imports["dialog.confirm"].show;
+    var alert = imports["dialog.alert"].show;
+    var showError = imports["dialog.error"].show;
     var fs = imports.fs;
     var Form = imports.Form;
     var run = imports.run;
@@ -37,6 +39,14 @@ define( function(require, exports, module){
     var INTERVAL_MS = 10000;
     var TIMEOUT_MS = 8000;
     var REFRESH_DELAY = 9000;
+    var INFO_KEYS = {
+      "name": "name",
+      "ip address": "ip",
+      "restful port": "restPort",
+      "ssh port" : "sshPort",
+      "ssh login": "login",
+      "password": "password"
+    };
 
     /***** Initialization *****/
     var plugin = new Panel("snlab.org", main.consumes, {
@@ -333,12 +343,21 @@ define( function(require, exports, module){
         idatagrid.resize(true);
       });
 
-      idatagrid.on("beforeRename", function() {
-        // TODO: validate rename value
+      idatagrid.on("beforeRename", function(e) {
+        if (e.node.argument == "password") {
+          e.value = e.node.value;
+        }
       });
 
-      idatagrid.on("rename", function() {
-        // TODO: rename value and post to sqlite3
+      idatagrid.on("rename", function(e) {
+        var item = datagrid.selection.getCursor();
+        if (item && item.uuid) {
+          var update = {};
+          update[INFO_KEYS[e.node.argument]] = e.value;
+          updateController(item.uuid, update);
+          reloadCtrlModel();
+          reloadInfoModel();
+        }
       });
 
       reloadCtrlModel();
@@ -410,7 +429,7 @@ define( function(require, exports, module){
           // unbindController(uuid);
           return;
         }
-        alert("Fail to delete the controller " + uuid);
+        showError("Fail to delete the controller " + uuid);
       });
 
     }
@@ -433,9 +452,22 @@ define( function(require, exports, module){
           if (res.status == 200) {
             return;
           }
-          alert("Fail to insert the controller.");
+          showError("Fail to insert the controller.");
         });
       }
+    }
+
+    function updateController(uuid, controller) {
+      http.request(endpoint + '/controllers/' + uuid, {
+        method: "POST",
+        body: controller
+      }, function(err, data, res) {
+        if (err) throw err;
+        if (res.status == 200) {
+          return;
+        }
+        showError("Fail to update the controller.");
+      });
     }
 
     function selectProjectToDeploy(controller) {
