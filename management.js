@@ -519,6 +519,10 @@ define( function(require, exports, module){
           }, function(err, tab, done, existing) {
             if (existing)
               tab.editor.reload();
+
+            tab.on('close', function(e) {
+              inactivateController(controller);
+            });
           });
         }
       });
