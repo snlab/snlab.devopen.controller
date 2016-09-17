@@ -1,6 +1,6 @@
 define( function(require, exports, module){
   "use strict";
-  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "dialog.confirm", "dialog.alert", "dialog.error", "fs", "Form", "run", "c9"];
+  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "dialog.confirm", "dialog.alert", "dialog.error", "fs", "Form", "run", "c9", "console"];
   main.provides = ["controller.management"];
   return main;
 
@@ -22,7 +22,9 @@ define( function(require, exports, module){
     var Form = imports.Form;
     var run = imports.run;
     var c9 = imports.c9;
+    var console = imports.console;
     var join = require("path").join;
+    var basename = require("path").basename;
 
     var Tree = require("ace_tree/tree");
     var TreeData = require("./controllerdp");
@@ -39,6 +41,7 @@ define( function(require, exports, module){
     var INTERVAL_MS = 10000;
     var TIMEOUT_MS = 8000;
     var REFRESH_DELAY = 9000;
+    var MININET = options.mininet || "sudo docker run -ti --privileged=true <docker_image_name> mininetsim ";
     var INFO_KEYS = {
       "name": "name",
       "ip address": "ip",
@@ -270,6 +273,14 @@ define( function(require, exports, module){
         getText: function(node) {
           if (node.argument == "password") {
             return "********";
+          } else if (node.argument == "topology") {
+            if (node.value < 0) {
+              return "Loading...";
+            } else if (node.value > 0) {
+              return node.value + " Nodes";
+            } else {
+              return "Double click to connect one.";
+            }
           }
           return node.value;
         }
@@ -337,6 +348,51 @@ define( function(require, exports, module){
       idatagrid.on("beforeRename", function(e) {
         if (e.node.argument == "password") {
           e.value = e.node.value;
+        } else if (e.node.argument == "topology") {
+          var item = datagrid.selection.getCursor();
+          fileDialog.show(
+            "Select a topology file to setup a virtual network",
+            "",
+            function(path, stat, done) {
+              fs.readFile(path, function(err, data) {
+                if (err) {
+                  alert("You must select a *.topo file");
+                  return;
+                }
+
+                var ext = path.split(".").pop();
+                if (ext === "topo") {
+                  // TODO: setup mininet virtual network
+                  tabManager.open({
+                    editorType: "terminal",
+                    pane: console.getPanes()[0],
+                    active: true,
+                    focus: true,
+                    document: {
+                      title: "Mininet",
+                      tooltip: "Mininet - " + basename(path)
+                    }
+                  }, function(err, tab) {
+                    if (err) throw err;
+
+                    var terminal = tab.editor;
+                    terminal.write(MININET + item.ip + " '" +
+                                   JSON.stringify(JSON.parse(data))
+                                   .replace(/'/g, "\\'") + "'\n");
+                  });
+                  fileDialog.hide();
+                } else {
+                  alert("You must select a *.topo file");
+                }
+              });
+            }, {}, {
+              createFolderButton: false,
+              showFilesCheckbox: true,
+              hideFileInput: false,
+              chooseCaption: "Setup"
+            });
+
+          return e.preventDefault();
         }
       });
 
@@ -379,7 +435,7 @@ define( function(require, exports, module){
       }
 
       var item = datagrid.selection.getCursor();
-      infoModel.setRoot({children : [
+      var args = [
         {
           argument: "name",
           value: item.name
@@ -403,8 +459,27 @@ define( function(require, exports, module){
         {
           argument: "password",
           value: item.password
+        },
+        {
+          argument: "topology",
+          value: -1
         }
-      ]});
+      ];
+      infoModel.setRoot({children : args});
+
+      http.request(endpoint + '/testtopology/' + item.uuid, {
+        method: "GET"
+      }, function(err, data, res) {
+        if (err) throw err;
+        if (res.status == 200) {
+          args.forEach(function(e) {
+            if (e.argument == "topology") {
+              e.value = data.topology;
+            }
+          });
+          infoModel.setRoot({children: args});
+        }
+      });
     }
 
     function addController() {
@@ -417,7 +492,6 @@ define( function(require, exports, module){
       }, function(err, data, res) {
         if (err) throw err;
         if (res.status == 200) {
-          // unbindController(uuid);
           return;
         }
         showError("Fail to delete the controller " + uuid);
@@ -476,7 +550,7 @@ define( function(require, exports, module){
         });
       }, {}, {
         createFolderButton: false,
-        shohwFilesCheckbox: true,
+        showFilesCheckbox: true,
         hideFileInput: false,
         chooseCaption: "Import"
       });
