@@ -349,48 +349,50 @@ define( function(require, exports, module){
         if (e.node.argument == "password") {
           e.value = e.node.value;
         } else if (e.node.argument == "topology") {
-          var item = datagrid.selection.getCursor();
-          fileDialog.show(
-            "Select a topology file to setup a virtual network",
-            "",
-            function(path, stat, done) {
-              fs.readFile(path, function(err, data) {
-                if (err) {
-                  alert("You must select a *.topo file");
-                  return;
-                }
+          if (!e.node.value) {
+            var item = datagrid.selection.getCursor();
+            fileDialog.show(
+              "Select a topology file to setup a virtual network",
+              "",
+              function(path, stat, done) {
+                fs.readFile(path, function(err, data) {
+                  if (err) {
+                    alert("You must select a *.topo file");
+                    return;
+                  }
 
-                var ext = path.split(".").pop();
-                if (ext === "topo") {
-                  // TODO: setup mininet virtual network
-                  tabManager.open({
-                    editorType: "terminal",
-                    pane: console.getPanes()[0],
-                    active: true,
-                    focus: true,
-                    document: {
-                      title: "Mininet",
-                      tooltip: "Mininet - " + basename(path)
-                    }
-                  }, function(err, tab) {
-                    if (err) throw err;
+                  var ext = path.split(".").pop();
+                  if (ext === "topo") {
+                    // TODO: setup mininet virtual network
+                    tabManager.open({
+                      editorType: "terminal",
+                      pane: console.getPanes()[0],
+                      active: true,
+                      focus: true,
+                      document: {
+                        title: "Mininet",
+                        tooltip: "Mininet - " + basename(path)
+                      }
+                    }, function(err, tab) {
+                      if (err) throw err;
 
-                    var terminal = tab.editor;
-                    terminal.write(MININET + item.ip + " '" +
-                                   JSON.stringify(JSON.parse(data))
-                                   .replace(/'/g, "\\'") + "'\n");
-                  });
-                  fileDialog.hide();
-                } else {
-                  alert("You must select a *.topo file");
-                }
+                      var terminal = tab.editor;
+                      terminal.write(MININET + item.ip + " '" +
+                                     JSON.stringify(JSON.parse(data))
+                                     .replace(/'/g, "\\'") + "'\n");
+                    });
+                    fileDialog.hide();
+                  } else {
+                    alert("You must select a *.topo file");
+                  }
+                });
+              }, {}, {
+                createFolderButton: false,
+                showFilesCheckbox: true,
+                hideFileInput: false,
+                chooseCaption: "Setup"
               });
-            }, {}, {
-              createFolderButton: false,
-              showFilesCheckbox: true,
-              hideFileInput: false,
-              chooseCaption: "Setup"
-            });
+          }
 
           return e.preventDefault();
         }
