@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 "use strict";
 
-const spawn = require('child_process').spawn;
-const path = require('path');
-const fs = require('fs');
+var spawn = require('child_process').spawn;
+var path = require('path');
+var fs = require('fs');
 var Client = require('ssh2').Client;
 var scp2 = require('scp2');
 
-const MAVEN = 'mvn';
+var MAVEN = 'mvn';
 
 module.exports = main;
 
@@ -56,15 +56,15 @@ function main(argv) {
     env: process.env
   });
 
-  build.stdout.on('data', (data) => {
+  build.stdout.on('data', function(data) {
     process.stdout.write(`${data}`);
   });
 
-  build.stderr.on('data', (data) => {
+  build.stderr.on('data', function(data) {
     process.stderr.write(`${data}`);
   });
 
-  build.on('exit', (code, signal) => {
+  build.on('exit', function(code, signal) {
     if (code) {
       console.log(`Exit code (${code})`);
       return;
