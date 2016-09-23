@@ -41,7 +41,7 @@ define( function(require, exports, module){
     var INTERVAL_MS = 10000;
     var TIMEOUT_MS = 8000;
     var REFRESH_DELAY = 9000;
-    var MININET = options.mininet || "sudo docker run -ti --privileged=true <docker_image_name> mininetsim ";
+    var MININET = options.mininet || "sudo docker run -ti --privileged=true devopen/mininet mininetsim ";
     var INFO_KEYS = {
       "name": "name",
       "ip address": "ip",
@@ -362,7 +362,7 @@ define( function(require, exports, module){
                   }
 
                   var ext = path.split(".").pop();
-                  if (ext === "topo") {
+                  if (ext === "topo" || ext === "topo2") {
                     // TODO: setup mininet virtual network
                     tabManager.open({
                       editorType: "terminal",

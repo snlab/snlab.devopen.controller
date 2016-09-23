@@ -31,6 +31,9 @@ function main(argv) {
         .alias("P", "password")
         .default("password", "karaf")
         .describe("password", "SSH password of the SDN controller")
+        .alias("f", "force")
+        .boolean("force")
+        .describe("force", "Force to rebuilding the project.")
         .boolean("help")
         .describe("help", "Show command line options.");
 
@@ -46,7 +49,7 @@ function main(argv) {
         fs.readdirSync(source).find(function(f) {
     return f.endsWith('.kar');
   });
-  if (kar) {
+  if (!options.force && kar) {
     uploadKarViaSSH(path.join(source, kar), options.argv);
     return;
   }
@@ -85,10 +88,8 @@ function uploadKarViaSSH(kar, controller) {
     username: controller.login,
     password: controller.password,
     algorithms: {
-      serverHostKey: [
-        'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384',
-        'ecdsa-sha2-nistp521', 'ssh-dss'
-      ]
+      kex: [ 'diffie-hellman-group14-sha1', 'diffie-hellman-group1-sha1' ],
+      serverHostKey: [ 'ssh-rsa', 'ssh-dss' ]
     }
   });
   fs.readFile(kar, function(err, data) {
@@ -144,10 +145,8 @@ function deployKarViaSSH(target, controller) {
     username: controller.login,
     password: controller.password,
     algorithms: {
-      serverHostKey: [
-        'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384',
-        'ecdsa-sha2-nistp521', 'ssh-dss'
-      ]
+      kex: [ 'diffie-hellman-group14-sha1', 'diffie-hellman-group1-sha1' ],
+      serverHostKey: [ 'ssh-rsa', 'ssh-dss' ]
     }
   });
 }
