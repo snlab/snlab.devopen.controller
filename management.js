@@ -23,7 +23,6 @@ define( function(require, exports, module){
     var run = imports.run;
     var c9 = imports.c9;
     var console = imports.console;
-    var join = require("path").join;
     var basename = require("path").basename;
 
     var Tree = require("ace_tree/tree");
@@ -128,41 +127,11 @@ define( function(require, exports, module){
         group: "DevOpen",
         exec: function() {
           var item = datagrid.selection.getCursor();
-          settings.set("project/devopen/@default_controller", item.uuid);
+          settings.set("project/devopen/@default_controller", item);
           reloadCtrlModel();
         }
       }, plugin);
 
-      // Context menu for tree
-      var itemCtxTreeDeploy = new ui.item({
-        match: "folder",
-        caption: "Deploy",
-        isAvailable: function() {
-          // TODO: Need more complex validation
-          return tree.selectedNode && tree.selectedNode.isFolder;
-        },
-        onclick: function() {
-          var uuid = settings.get("project/devopen/@default_controller");
-          var controller = cacheList.find(function(e) {
-            return e.uuid == uuid;
-          });
-          if (controller) {
-            deployKarToController(controller,
-                                  join(c9.workspaceDir, tree.selected));
-          }
-          else {
-            confirm("No default controller?",
-                    "No controller to deploy, you need to configure a default controller or add a new one.",
-                    "Would you like to go to controller panel?",
-                    function() {
-                      commands.exec("togglecontrollers");
-                    });
-          }
-        }
-      });
-      tree.getElement("mnuCtxTree", function(mnuCtxTree) {
-        ui.insertByIndex(mnuCtxTree, itemCtxTreeDeploy, 170, plugin);
-      });
 
       // Load CSS
       ui.insertCss(css, false, plugin);
@@ -537,45 +506,6 @@ define( function(require, exports, module){
       });
     }
 
-    function selectProjectToDeploy(controller) {
-      fileDialog.show("Select a bundle or kar", "", function(path, stat, done) {
-        fs.readFile(path, function(err, data) {
-          if (err) throw err;
-
-          var ext = path.split(".").pop();
-          if (ext === "kar") {
-            deployKarToController(controller, join(c9.workspaceDir, path));
-          } else {
-            alert("No *.kar file selected!");
-          }
-          fileDialog.hide();
-        });
-      }, {}, {
-        createFolderButton: false,
-        showFilesCheckbox: true,
-        hideFileInput: false,
-        chooseCaption: "Import"
-      });
-    }
-
-    function deployKarToController(controller, path) {
-      var configs = settings.getJson("/project/run/configs") || {};
-      configs["default controller"] = {
-        command: [path,
-                    '-c', controller.ip,
-                    '-p', controller.sshPort,
-                    '-l', controller.login,
-                    '-P', controller.password].join(' '),
-        default: true,
-        name: "default controller",
-        runner: "devopen",
-        toolbar: true
-      };
-      settings.setJson("project/run/configs", configs);
-
-      commands.exec("run");
-    }
-
     function activateController(controller) {
       http.request(endpoint + "/activate/" + controller.uuid, {
         method: "GET"
@@ -642,7 +572,8 @@ define( function(require, exports, module){
     }
 
     function isDefaultController(uuid) {
-      return settings.get("project/devopen/@default_controller") == uuid;
+      var defaultController = settings.get("project/devopen/@default_controller");
+      return defaultController && defaultController.uuid == uuid;
     }
 
     /***** Lifecycle *****/
