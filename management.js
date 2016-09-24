@@ -242,13 +242,13 @@ define( function(require, exports, module){
         getText: function(node) {
           if (node.argument == "password") {
             return "********";
-          } else if (node.argument == "topology") {
+          } else if (node.argument == "test mininet") {
             if (node.value < 0) {
-              return "Loading...";
+              return "Cannot connect to mininet";
             } else if (node.value > 0) {
-              return node.value + " Nodes";
+              return "Network connecting: " + node.value + " Nodes";
             } else {
-              return "Double click to connect one.";
+              return "Double click to create and connect";
             }
           }
           return node.value;
@@ -317,11 +317,11 @@ define( function(require, exports, module){
       idatagrid.on("beforeRename", function(e) {
         if (e.node.argument == "password") {
           e.value = e.node.value;
-        } else if (e.node.argument == "topology") {
+        } else if (e.node.argument == "test mininet") {
           if (!e.node.value) {
             var item = datagrid.selection.getCursor();
             fileDialog.show(
-              "Select a topology file to setup a virtual network",
+              "Select a topology to create and start a mininet",
               "",
               function(path, stat, done) {
                 fs.readFile(path, function(err, data) {
@@ -432,7 +432,7 @@ define( function(require, exports, module){
           value: item.password
         },
         {
-          argument: "topology",
+          argument: "test mininet",
           value: -1
         }
       ];
@@ -444,7 +444,7 @@ define( function(require, exports, module){
         if (err) throw err;
         if (res.status == 200) {
           args.forEach(function(e) {
-            if (e.argument == "topology") {
+            if (e.argument == "test mininet") {
               e.value = data.topology;
             }
           });
