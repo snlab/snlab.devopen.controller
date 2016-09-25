@@ -1,6 +1,6 @@
 define( function(require, exports, module){
   "use strict";
-  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "dialog.confirm", "dialog.alert", "dialog.error", "fs", "Form", "run", "c9", "console"];
+  main.consumes = ["ui", "commands", "Dialog", "Panel", "http", "tree", "tabManager", "layout", "settings", "dialog.file", "dialog.alert", "dialog.error", "fs", "Form", "run", "c9", "console"];
   main.provides = ["controller.management"];
   return main;
 
@@ -15,7 +15,6 @@ define( function(require, exports, module){
     var layout = imports.layout;
     var settings = imports.settings;
     var fileDialog = imports["dialog.file"];
-    var confirm = imports["dialog.confirm"].show;
     var alert = imports["dialog.alert"].show;
     var showError = imports["dialog.error"].show;
     var fs = imports.fs;
