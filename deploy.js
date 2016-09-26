@@ -49,7 +49,7 @@ function main(argv) {
         fs.readdirSync(source).find(function(f) {
     return f.endsWith('.kar');
   });
-  if (!options.force && kar) {
+  if (!options.argv.force && kar) {
     uploadKarViaSSH(path.join(source, kar), options.argv);
     return;
   }
@@ -114,9 +114,9 @@ function deployKarViaSSH(target, controller) {
         stream.close();
       };
       stream.on('close', function() {
-        console.log('Stream :: close');
+        // console.log('Stream :: close');
         conn.end();
-        console.log('Stream :: close successfully');
+        // console.log('Stream :: close successfully');
       }).on('data', function(data) {
         process.stderr.write(`${data}`);
       }).stderr.on('data', function(data) {
@@ -138,7 +138,9 @@ function deployKarViaSSH(target, controller) {
       ].join('\n'));
     });
   }).on('end', function() {
-    console.log('Client :: disconnected');
+    // console.log('Client :: disconnected');
+    console.log('[DevOpen - Maple] Deploy successfully!');
+    process.exit(0);
   }).connect({
     host: controller.controller,
     port: controller.port,
