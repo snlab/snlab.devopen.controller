@@ -46,7 +46,8 @@ define( function(require, exports, module){
       "restful port": "restPort",
       "ssh port" : "sshPort",
       "ssh login": "login",
-      "password": "password"
+      "password": "password",
+      "gui mode": "guiMode"
     };
 
     /***** Initialization *****/
@@ -249,6 +250,15 @@ define( function(require, exports, module){
             } else {
               return "Double click to create and connect";
             }
+          } else if (node.argument == "gui mode") {
+            if (node.value == "devopen") {
+              return "DevOpen (Dev & Op)";
+            } else if (node.value == "ofng") {
+              return "OpenFlow-NextGen (Op)";
+            } else if (node.value.startsWith("http://") ||
+                       node.value.startsWith("https://")) {
+              return node.value + " (Custom)";
+            }
           }
           return node.value;
         }
@@ -367,12 +377,22 @@ define( function(require, exports, module){
       });
 
       idatagrid.on("rename", function(e) {
+        if (e.node.argument == "gui mode") {
+          if (e.value != "devopen" && e.value != "ofng" &&
+              !e.value.startsWith("http://") &&
+              !e.value.startsWith("https://")) {
+            return e.preventDefault();
+          }
+        }
         var item = datagrid.selection.getCursor();
         if (item && item.uuid) {
           var update = {};
           update[INFO_KEYS[e.node.argument]] = e.value;
           updateController(item.uuid, update);
           reloadCtrlModel();
+          var newnode = datagrid.provider.visibleItems.find(function(d) {
+            return d.uuid = item.uuid;});
+          datagrid.selection.selectNode(newnode, false, true);
           reloadInfoModel();
         }
       });
@@ -433,6 +453,10 @@ define( function(require, exports, module){
         {
           argument: "test mininet",
           value: -1
+        },
+        {
+          argument: "gui mode",
+          value: item.guiMode || "devopen"
         }
       ];
       infoModel.setRoot({children : args});
@@ -617,6 +641,17 @@ define( function(require, exports, module){
             name: "password",
             defaultValue: "karaf",
             type: "password"
+          },
+          {
+            title: "GUI Mode",
+            name: "guiMode",
+            type: "dropdown",
+            defaultValue: "devopen",
+            items: [
+              {caption: "DevOpen (Dev & Op)", value: "devopen"},
+              {caption: "OpenFlow-NextGen (Op)", value: "ofng"},
+              {caption: "Custom (Need to set url of custom ui later)", value: "http://custom.ui"}
+            ]
           },
           {
             type: "submit",
